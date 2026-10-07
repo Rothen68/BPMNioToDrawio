@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_complet" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.31.0">
+  <bpmn:collaboration id="Collaboration_1">
+    <bpmn:participant id="Pool_Client" name="Client" processRef="Process_Client" />
+    <bpmn:participant id="Pool_Fournisseur" name="Fournisseur" />
+    <bpmn:participant id="Pool_Catalogue" name="Catalogue de formes" processRef="Process_Catalogue" />
+    <bpmn:messageFlow id="MsgFlow_Commande" name="Bon de commande" sourceRef="Task_Commander" targetRef="Pool_Fournisseur" />
+    <bpmn:messageFlow id="MsgFlow_Confirmation" sourceRef="Pool_Fournisseur" targetRef="Start_Commande" />
+    <bpmn:textAnnotation id="Annotation_Delai">
+      <bpmn:text>Délai max :
+48 h</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Delai" associationDirection="None" sourceRef="Annotation_Delai" targetRef="End_Termine" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Client" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_Client">
+      <bpmn:lane id="Lane_Accueil" name="Accueil">
+        <bpmn:flowNodeRef>Start_Commande</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Verifier</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_OK</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Commander</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Split</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Notifier</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Join</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Termine</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Boundary_Timer</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Back" name="Back-office">
+        <bpmn:flowNodeRef>Throw_Escalade</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Refusee</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Sub_Preparer</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_Commande" name="Commande reçue">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_1" />
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Verifier" name="Vérifier la commande">
+      <bpmn:documentation>Contrôler le stock et le client.</bpmn:documentation>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+      <bpmn:property id="Property_1" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataIn_1">
+        <bpmn:sourceRef>DataRef_Commande</bpmn:sourceRef>
+        <bpmn:targetRef>Property_1</bpmn:targetRef>
+      </bpmn:dataInputAssociation>
+    </bpmn:userTask>
+    <bpmn:boundaryEvent id="Boundary_Timer" name="24 h" cancelActivity="false" attachedToRef="Task_Verifier">
+      <bpmn:outgoing>Flow_Timer</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TED_1" />
+    </bpmn:boundaryEvent>
+    <bpmn:intermediateThrowEvent id="Throw_Escalade" name="Escalader">
+      <bpmn:incoming>Flow_Timer</bpmn:incoming>
+      <bpmn:escalationEventDefinition id="EED_1" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:exclusiveGateway id="Gateway_OK" name="OK ?" default="Flow_Non">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Oui</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Non</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="End_Refusee" name="Refusée">
+      <bpmn:incoming>Flow_Non</bpmn:incoming>
+      <bpmn:terminateEventDefinition id="TerED_1" />
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Task_Commander" name="Commander">
+      <bpmn:incoming>Flow_Oui</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:parallelGateway id="Gateway_Split">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:sendTask id="Task_Notifier" name="Notifier le client">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:subProcess id="Sub_Preparer" name="Préparer">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+      <bpmn:startEvent id="Sub_Start">
+        <bpmn:outgoing>Sub_Flow_1</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:scriptTask id="Sub_Calculer" name="Calculer">
+        <bpmn:incoming>Sub_Flow_1</bpmn:incoming>
+        <bpmn:outgoing>Sub_Flow_2</bpmn:outgoing>
+        <bpmn:multiInstanceLoopCharacteristics />
+      </bpmn:scriptTask>
+      <bpmn:endEvent id="Sub_End">
+        <bpmn:incoming>Sub_Flow_2</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Sub_Flow_1" sourceRef="Sub_Start" targetRef="Sub_Calculer" />
+      <bpmn:sequenceFlow id="Sub_Flow_2" sourceRef="Sub_Calculer" targetRef="Sub_End" />
+    </bpmn:subProcess>
+    <bpmn:parallelGateway id="Gateway_Join">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:endEvent id="End_Termine" name="Terminé">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MED_2" />
+    </bpmn:endEvent>
+    <bpmn:dataObjectReference id="DataRef_Commande" name="Commande" dataObjectRef="DataObject_1" />
+    <bpmn:dataObject id="DataObject_1" />
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="Start_Commande" targetRef="Task_Verifier" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Verifier" targetRef="Gateway_OK" />
+    <bpmn:sequenceFlow id="Flow_Oui" name="oui" sourceRef="Gateway_OK" targetRef="Task_Commander" />
+    <bpmn:sequenceFlow id="Flow_Non" name="non" sourceRef="Gateway_OK" targetRef="End_Refusee" />
+    <bpmn:sequenceFlow id="Flow_Timer" sourceRef="Boundary_Timer" targetRef="Throw_Escalade" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Commander" targetRef="Gateway_Split" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Gateway_Split" targetRef="Task_Notifier" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Gateway_Split" targetRef="Sub_Preparer" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_Notifier" targetRef="Gateway_Join" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Sub_Preparer" targetRef="Gateway_Join" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Gateway_Join" targetRef="End_Termine" />
+    <bpmn:group id="Group_Controle" categoryValueRef="CategoryValue_1" />
+  </bpmn:process>
+  <bpmn:category id="Category_1">
+    <bpmn:categoryValue id="CategoryValue_1" value="Contrôle" />
+  </bpmn:category>
+  <bpmn:process id="Process_Catalogue" isExecutable="false">
+    <bpmn:inclusiveGateway id="Cat_Inclusive" name="Inclusive" />
+    <bpmn:complexGateway id="Cat_Complex" name="Complexe" />
+    <bpmn:eventBasedGateway id="Cat_EventBased" name="Événementielle" />
+    <bpmn:callActivity id="Cat_Call" name="Appel" />
+    <bpmn:transaction id="Cat_Transaction" name="Transaction" />
+    <bpmn:businessRuleTask id="Cat_Rule" name="Règle métier" />
+    <bpmn:manualTask id="Cat_Manual" name="Manuelle">
+      <bpmn:standardLoopCharacteristics />
+    </bpmn:manualTask>
+    <bpmn:receiveTask id="Cat_Receive" name="Réception">
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true" />
+    </bpmn:receiveTask>
+    <bpmn:intermediateCatchEvent id="Cat_Signal" name="Signal">
+      <bpmn:signalEventDefinition id="SED_1" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:startEvent id="Cat_Conditional" name="Condition">
+      <bpmn:conditionalEventDefinition id="CED_1">
+        <bpmn:condition xsi:type="bpmn:tFormalExpression" />
+      </bpmn:conditionalEventDefinition>
+    </bpmn:startEvent>
+    <bpmn:intermediateThrowEvent id="Cat_Link" name="Lien">
+      <bpmn:linkEventDefinition id="LED_1" name="A" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:endEvent id="Cat_Error" name="Erreur">
+      <bpmn:errorEventDefinition id="ErED_1" />
+    </bpmn:endEvent>
+    <bpmn:dataStoreReference id="Cat_Store" name="Base" />
+    <bpmn:subProcess id="Cat_EventSub" name="Sur délai" triggeredByEvent="true">
+      <bpmn:startEvent id="Cat_EventSub_Start" isInterrupting="false">
+        <bpmn:timerEventDefinition id="TED_2" />
+      </bpmn:startEvent>
+    </bpmn:subProcess>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+      <bpmndi:BPMNShape id="Pool_Client_di" bpmnElement="Pool_Client" isHorizontal="true">
+        <dc:Bounds x="100" y="60" width="1100" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Accueil_di" bpmnElement="Lane_Accueil" isHorizontal="true">
+        <dc:Bounds x="130" y="60" width="1070" height="125" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Back_di" bpmnElement="Lane_Back" isHorizontal="true">
+        <dc:Bounds x="130" y="185" width="1070" height="125" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Group_Controle_di" bpmnElement="Group_Controle">
+        <dc:Bounds x="245" y="70" width="135" height="110" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_Commande_di" bpmnElement="Start_Commande">
+        <dc:Bounds x="172" y="104" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Verifier_di" bpmnElement="Task_Verifier">
+        <dc:Bounds x="260" y="82" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Boundary_Timer_di" bpmnElement="Boundary_Timer">
+        <dc:Bounds x="292" y="144" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Throw_Escalade_di" bpmnElement="Throw_Escalade">
+        <dc:Bounds x="292" y="232" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataRef_Commande_di" bpmnElement="DataRef_Commande">
+        <dc:Bounds x="182" y="215" width="36" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_OK_di" bpmnElement="Gateway_OK" isMarkerVisible="true">
+        <dc:Bounds x="410" y="97" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Refusee_di" bpmnElement="End_Refusee">
+        <dc:Bounds x="417" y="232" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Commander_di" bpmnElement="Task_Commander">
+        <dc:Bounds x="510" y="82" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Split_di" bpmnElement="Gateway_Split">
+        <dc:Bounds x="660" y="97" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Notifier_di" bpmnElement="Task_Notifier">
+        <dc:Bounds x="790" y="82" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_Preparer_di" bpmnElement="Sub_Preparer" isExpanded="true">
+        <dc:Bounds x="740" y="195" width="230" height="105" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_Start_di" bpmnElement="Sub_Start">
+        <dc:Bounds x="762" y="237" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_Calculer_di" bpmnElement="Sub_Calculer">
+        <dc:Bounds x="820" y="220" width="80" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_End_di" bpmnElement="Sub_End">
+        <dc:Bounds x="922" y="237" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Join_di" bpmnElement="Gateway_Join">
+        <dc:Bounds x="1010" y="97" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Termine_di" bpmnElement="End_Termine">
+        <dc:Bounds x="1112" y="104" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Annotation_Delai_di" bpmnElement="Annotation_Delai">
+        <dc:Bounds x="1230" y="40" width="100" height="45" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Pool_Fournisseur_di" bpmnElement="Pool_Fournisseur" isHorizontal="true">
+        <dc:Bounds x="100" y="360" width="1100" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Pool_Catalogue_di" bpmnElement="Pool_Catalogue" isHorizontal="true">
+        <dc:Bounds x="100" y="470" width="1100" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_Inclusive_di" bpmnElement="Cat_Inclusive">
+        <dc:Bounds x="165" y="505" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_Complex_di" bpmnElement="Cat_Complex">
+        <dc:Bounds x="265" y="505" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_EventBased_di" bpmnElement="Cat_EventBased">
+        <dc:Bounds x="365" y="505" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_Call_di" bpmnElement="Cat_Call">
+        <dc:Bounds x="460" y="490" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_Transaction_di" bpmnElement="Cat_Transaction">
+        <dc:Bounds x="590" y="490" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_Rule_di" bpmnElement="Cat_Rule">
+        <dc:Bounds x="720" y="490" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_Manual_di" bpmnElement="Cat_Manual">
+        <dc:Bounds x="850" y="490" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_Receive_di" bpmnElement="Cat_Receive">
+        <dc:Bounds x="980" y="490" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_Signal_di" bpmnElement="Cat_Signal">
+        <dc:Bounds x="172" y="632" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_Conditional_di" bpmnElement="Cat_Conditional">
+        <dc:Bounds x="272" y="632" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_Link_di" bpmnElement="Cat_Link">
+        <dc:Bounds x="372" y="632" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_Error_di" bpmnElement="Cat_Error">
+        <dc:Bounds x="472" y="632" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_Store_di" bpmnElement="Cat_Store">
+        <dc:Bounds x="575" y="625" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_EventSub_di" bpmnElement="Cat_EventSub" isExpanded="true">
+        <dc:Bounds x="720" y="600" width="200" height="110" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cat_EventSub_Start_di" bpmnElement="Cat_EventSub_Start">
+        <dc:Bounds x="802" y="642" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="208" y="122" />
+        <di:waypoint x="260" y="122" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="360" y="122" />
+        <di:waypoint x="410" y="122" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Oui_di" bpmnElement="Flow_Oui">
+        <di:waypoint x="460" y="122" />
+        <di:waypoint x="510" y="122" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="477" y="104" width="16" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Non_di" bpmnElement="Flow_Non">
+        <di:waypoint x="435" y="147" />
+        <di:waypoint x="435" y="232" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="441" y="180" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Timer_di" bpmnElement="Flow_Timer">
+        <di:waypoint x="310" y="180" />
+        <di:waypoint x="310" y="232" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataIn_1_di" bpmnElement="DataIn_1">
+        <di:waypoint x="215" y="215" />
+        <di:waypoint x="268" y="162" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="610" y="122" />
+        <di:waypoint x="660" y="122" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="710" y="122" />
+        <di:waypoint x="790" y="122" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="685" y="147" />
+        <di:waypoint x="685" y="248" />
+        <di:waypoint x="740" y="248" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="890" y="122" />
+        <di:waypoint x="1010" y="122" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="970" y="248" />
+        <di:waypoint x="1035" y="248" />
+        <di:waypoint x="1035" y="147" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1060" y="122" />
+        <di:waypoint x="1112" y="122" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Sub_Flow_1_di" bpmnElement="Sub_Flow_1">
+        <di:waypoint x="798" y="255" />
+        <di:waypoint x="820" y="255" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Sub_Flow_2_di" bpmnElement="Sub_Flow_2">
+        <di:waypoint x="900" y="255" />
+        <di:waypoint x="922" y="255" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Commande_di" bpmnElement="MsgFlow_Commande">
+        <di:waypoint x="560" y="162" />
+        <di:waypoint x="560" y="360" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="566" y="320" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Confirmation_di" bpmnElement="MsgFlow_Confirmation">
+        <di:waypoint x="190" y="360" />
+        <di:waypoint x="190" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Delai_di" bpmnElement="Association_Delai">
+        <di:waypoint x="1230" y="70" />
+        <di:waypoint x="1143" y="111" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

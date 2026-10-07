@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'">
+  <title>BPMN vers draw.io</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>BPMN <span class="arrow">→</span> draw.io</h1>
+    <p>Convertit vos diagrammes bpmn.io en fichiers <strong>.drawio</strong> à importer dans LeanIX, Confluence ou draw.io.</p>
+  </header>
+
+  <main>
+    <section id="drop" class="drop" tabindex="0">
+      <div class="drop-icon" aria-hidden="true">⇩</div>
+      <div>
+        <strong>Déposez vos fichiers .bpmn ici</strong>
+        <span class="muted">ou</span>
+        <button id="pick" type="button" class="secondary">Choisir des fichiers…</button>
+      </div>
+      <p class="muted small">Un fichier .drawio créé par cet outil redonne le BPMN d'origine.</p>
+    </section>
+
+    <section class="list-wrap">
+      <div class="list-head">
+        <span id="count">Aucun fichier</span>
+        <button id="clear" type="button" class="link" hidden>Vider la liste</button>
+      </div>
+      <ul id="list"></ul>
+    </section>
+
+    <section class="options">
+      <span class="label">Enregistrer</span>
+      <label><input type="radio" name="dest" value="same" checked> à côté de chaque fichier</label>
+      <label><input type="radio" name="dest" value="folder"> dans le dossier :</label>
+      <button id="folder" type="button" class="secondary small-btn">Choisir…</button>
+      <span id="folder-path" class="muted path"></span>
+    </section>
+  </main>
+
+  <footer>
+    <span id="summary" class="muted"></span>
+    <button id="convert" type="button" class="primary" disabled>Convertir</button>
+  </footer>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

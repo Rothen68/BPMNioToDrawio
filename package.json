@@ -1,0 +1,54 @@
+{
+  "name": "bpmn-to-drawio",
+  "version": "0.1.0",
+  "description": "Convertit des diagrammes BPMN 2.0 (bpmn.io) en fichiers draw.io modifiables, avec le BPMN d’origine embarqué.",
+  "type": "module",
+  "main": "app/main.js",
+  "bin": {
+    "bpmn2drawio": "bin/bpmn2drawio.js"
+  },
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test \"test/**/*.test.js\"",
+    "convert": "node bin/bpmn2drawio.js",
+    "dist:win": "electron-builder --win --x64"
+  },
+  "author": "rothen68",
+  "license": "MIT",
+  "dependencies": {
+    "bpmn-moddle": "^9.0.4"
+  },
+  "devDependencies": {
+    "@xmldom/xmldom": "^0.9.12",
+    "electron": "^44.6.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "io.github.rothen68.bpmn-to-drawio",
+    "productName": "BPMN vers draw.io",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "app/**",
+      "src/**",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ],
+      "icon": "build/icon.png"
+    },
+    "portable": {
+      "artifactName": "BPMN-vers-drawio-${version}-portable.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "BPMN-vers-drawio-${version}-installation.exe"
+    }
+  }
+}
