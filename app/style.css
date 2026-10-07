@@ -53,6 +53,7 @@ main {
 .drop.over { border-color: var(--accent); background: #eef5ff; }
 .drop-icon { font-size: 26px; color: var(--accent); line-height: 1; }
 .drop p { margin: 0; }
+.drop .help { max-width: 560px; margin-top: 4px; }
 
 .list-wrap {
   flex: 1;

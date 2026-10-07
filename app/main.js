@@ -40,8 +40,9 @@ ipcMain.handle('dialog:openFiles', async () => {
     title: 'Choisir des fichiers BPMN',
     properties: ['openFile', 'multiSelections'],
     filters: [
+      { name: 'Fichiers BPMN et draw.io', extensions: ['bpmn', 'drawio'] },
       { name: 'Fichiers BPMN', extensions: ['bpmn'] },
-      { name: 'Fichiers draw.io (restauration du BPMN)', extensions: ['drawio'] },
+      { name: 'Fichiers draw.io (récupérer le BPMN)', extensions: ['drawio'] },
       { name: 'Tous les fichiers', extensions: ['*'] }
     ]
   });
