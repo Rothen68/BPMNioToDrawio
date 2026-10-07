@@ -13,7 +13,7 @@ Convertit des diagrammes **BPMN 2.0** créés avec [bpmn.io](https://bpmn.io) (o
 
 Une fenêtre permet de choisir (ou glisser-déposer) un ou plusieurs fichiers `.bpmn` et de les convertir en un clic. Les fichiers `.drawio` sont enregistrés à côté des originaux ou dans un dossier au choix.
 
-Si on y dépose un `.drawio` créé par l'outil, il restaure le `.bpmn` d'origine. Un fichier existant n'est jamais écrasé : le résultat s'appelle alors `nom (restauré).bpmn`.
+Si on y dépose un `.drawio` créé par l'outil, il restaure le `.bpmn` d'origine. Un fichier existant n'est jamais écrasé : le résultat s'appelle alors `nom (restauré).bpmn`. d
 
 **Récupérer l'exécutable** : chaque push lance le workflow GitHub Actions *Tests et application Windows*, qui produit l'artefact `BPMN-vers-drawio-windows` contenant :
 
