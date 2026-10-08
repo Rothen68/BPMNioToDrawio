@@ -24,6 +24,8 @@ Pousser un tag `v0.1.0` publie ces deux fichiers dans une *Release* GitHub.
 
 > L'exécutable n'est pas signé : au premier lancement, Windows SmartScreen peut afficher « Windows a protégé votre ordinateur ». Il faut cliquer sur *Informations complémentaires*, puis sur *Exécuter quand même*.
 
+**Hors ligne** : l'application n'utilise jamais le réseau. Elle désactive la détection automatique du proxy système (requêtes DNS « WPAD » sous Windows) et refuse toute requête vers autre chose qu'un fichier local. Le test `npm run test:offline` le vérifie à chaque build Windows.
+
 ## Ligne de commande
 
 Prérequis : Node.js 20 ou plus récent.

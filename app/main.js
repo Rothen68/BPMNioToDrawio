@@ -1,6 +1,6 @@
 // Electron main process: window, native dialogs and file conversion.
 
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, session, shell } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { convertFile, isBpmnFile, isDrawioFile } from '../src/files.js';
@@ -11,6 +11,20 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const filesFromArgs = (argv) => argv.slice(1).filter((a) => isBpmnFile(a) || isDrawioFile(a));
 
 let mainWindow;
+
+// The app only works on local files, so it stays offline: no system proxy
+// discovery (WPAD DNS lookups on Windows), no background network services,
+// and every request that is not for a local resource is refused.
+app.commandLine.appendSwitch('no-proxy-server');
+app.commandLine.appendSwitch('disable-background-networking');
+
+const LOCAL_URL = /^(file|devtools|data|blob):/i;
+
+function blockNetwork() {
+  const ses = session.defaultSession;
+  ses.webRequest.onBeforeRequest((details, callback) => callback({ cancel: !LOCAL_URL.test(details.url) }));
+  ses.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -25,8 +39,13 @@ function createWindow() {
       preload: path.join(here, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true
+      sandbox: true,
+      spellcheck: false
     }
+  });
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (!url.startsWith('file:')) event.preventDefault();
   });
   mainWindow.loadFile(path.join(here, 'index.html'));
   mainWindow.webContents.once('did-finish-load', () => {
@@ -79,6 +98,9 @@ if (!app.requestSingleInstanceLock()) {
     const files = filesFromArgs(argv);
     if (files.length) mainWindow.webContents.send('files:add', files);
   });
-  app.whenReady().then(createWindow);
+  app.whenReady().then(() => {
+    blockNetwork();
+    createWindow();
+  });
   app.on('window-all-closed', () => app.quit());
 }

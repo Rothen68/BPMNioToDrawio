@@ -11,7 +11,8 @@
     "start": "electron .",
     "test": "node --test \"test/**/*.test.js\"",
     "convert": "node bin/bpmn2drawio.js",
-    "dist:win": "electron-builder --win --x64"
+    "dist:win": "electron-builder --win --x64",
+    "test:offline": "node test/app/offline.mjs"
   },
   "author": "rothen68",
   "license": "MIT",
@@ -21,7 +22,8 @@
   "devDependencies": {
     "@xmldom/xmldom": "^0.9.12",
     "electron": "^44.6.0",
-    "electron-builder": "^26.15.3"
+    "electron-builder": "^26.15.3",
+    "playwright": "^1.56.1"
   },
   "build": {
     "appId": "io.github.rothen68.bpmn-to-drawio",
